@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <style>
+        /* Styles for the floating box */
+        .floating-box {
+            position: fixed; /* Fixed positioning so it floats */
+            top: 10px;       /* Distance from the top */
+            right: 10px;     /* Distance from the right */
+            background-color: #f9f9f9; /* Background color */
+            padding: 10px;   /* Some padding */
+            border: 1px solid #ddd; /* Border */
+            border-radius: 5px; /* Rounded corners */
+            z-index: 1000;   /* Ensure it appears above other elements */
+        }
+    </style>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>drwaing guesser</title>
+</head>
+<body>
+
+    <div class="floating-box">
+        Here is the alternatives ant, apple, bat, bee, broccoli, broom, butterfly, cat, crocodile
+
+    <div class = "hint"> Here is a hint : {{hint}}</div>
+    </div>
+
+    <canvas id="drawingCanvas" width="280" height="280" style="border:1px solid #000;"></canvas>
+    <button onclick="sendToServer()">Send</button>
+
+    <script>
+        let canvas = document.getElementById('drawingCanvas');
+let ctx = canvas.getContext('2d');
+
+let drawing = false;
+
+canvas.addEventListener('mousedown', startDrawing);
+canvas.addEventListener('mouseup', stopDrawing);
+canvas.addEventListener('mousemove', draw);
+
+function startDrawing(e) {
+    drawing = true;
+    draw(e);
+}
+
+function stopDrawing() {
+    drawing = false;
+    ctx.beginPath();
+}
+
+function draw(e) {
+    if (!drawing) return;
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+
+    // Black color
+    ctx.strokeStyle = "black";
+
+    // Get canvas bounding rectangle
+    let rect = canvas.getBoundingClientRect();
+
+    // Adjust the mouse position to be relative to the canvas
+    let x = e.clientX - rect.left;
+    let y = e.clientY - rect.top;
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+
+    // Begin a new path
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+}
+
+function sendToServer() {
+    let dataURL = canvas.toDataURL();
+    let hintContent = document.querySelector('.hint').textContent.replace('Here is a hint : ', '');
+
+    fetch('/your-backend-endpoint', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+            image: dataURL,
+            hint: hintContent  // Send the hint content
+        })
+    }).then(response => response.json())
+      .then(data => {
+        console.log(data);
+        displayResponseAboveCanvas(data.message); 
+        if (data.newHint) { // Check if there's a newHint key in the response
+            updateHint(data.newHint); // Update the hint div with the new hint
+        }
+        addNewCanvas();
+      });
+}
+
+function updateHint(newHint) {
+    let hintDiv = document.querySelector('.hint');
+    hintDiv.textContent = "Here is a hint : " + newHint;
+}
+
+function addNewCanvas() {
+    let newCanvas = document.createElement('canvas');
+    newCanvas.width = 280;
+    newCanvas.height = 280;
+    newCanvas.style.border = "1px solid #000";
+    document.body.insertBefore(newCanvas, canvas.nextSibling); // Add the new canvas next to the previous one
+
+    // Update the canvas and context variables to point to the new canvas
+    canvas = newCanvas;
+    ctx = canvas.getContext('2d');
+
+    // Attach the event listeners to the new canvas
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mousemove', draw);
+}
+
+function displayResponseAboveCanvas(message) {
+    let responseDiv = document.createElement('div');
+    responseDiv.textContent = message;
+    document.body.insertBefore(responseDiv, canvas);
+}
+    
+    </script>
+</body>
+</html>
