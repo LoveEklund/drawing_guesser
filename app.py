@@ -18,7 +18,7 @@ MODEL.load_weights("model/model.h5")
 
 app = Flask(__name__)
 
-LABEL_INDEX = random.randint(0, len(LABEL_MAPPING))
+LABEL_INDEX = random.randint(0, len(LABEL_MAPPING)-1)
 LABEL = LABEL_MAPPING[LABEL_INDEX]
 
 def string_overlap(target, strings):
@@ -41,7 +41,7 @@ def string_overlap(target, strings):
 def score_image(image):
     resized_image = image.resize((28, 28), Image.BICUBIC)
     numpy_array = np.array(resized_image).sum(axis=2) 
-    numpy_array = numpy_array / numpy_array.max()
+    numpy_array = (numpy_array >= (numpy_array.max() * 0.3)).astype("float")
 
     #to see how it looks after resampling
     Image.fromarray((numpy_array * 255).astype(np.uint8)).save('predict_image.png', 'PNG', quality=95)
@@ -64,13 +64,17 @@ def save_image():
     #score = predictions[GUESS_INDEX]* 100
 
     top_guess = predictions.argmax()
-
-    if top_guess != LABEL_INDEX:
-        message = f"Th at's not it fam, looks like {LABEL_MAPPING[top_guess]} to me, I'll update the hint for you though"
-        out_hint = " ".join(string_overlap(LABEL,[LABEL_MAPPING[top_guess],in_hint]))
+    
+    if max(predictions) >= 0.5:
+        if top_guess != LABEL_INDEX:
+            message = f"That's not it fam, looks like {LABEL_MAPPING[top_guess]} to me, I'll update the hint for you though"
+            out_hint = " ".join(string_overlap(LABEL,[LABEL_MAPPING[top_guess],in_hint]))
+        else:
+            message = f"yes you got it, congrats! \nit was {LABEL_MAPPING[LABEL_INDEX]} i wanted"
+            out_hint = " ".join(LABEL)
     else:
-        message = f"yes you got it, congrats! \nit was {LABEL_MAPPING[LABEL_INDEX]} i wanted"
-        out_hint = " ".join(LABEL)
+        message = "what is that?"
+        out_hint = " ".join(in_hint)
 
     return jsonify({"message": message, "newHint": out_hint})
 @app.route('/', methods=['GET'])

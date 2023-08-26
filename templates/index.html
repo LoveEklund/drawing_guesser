@@ -3,17 +3,67 @@
 <head>
 
     <style>
-        /* Styles for the floating box */
-        .floating-box {
-            position: fixed; /* Fixed positioning so it floats */
-            top: 10px;       /* Distance from the top */
-            right: 10px;     /* Distance from the right */
-            background-color: #f9f9f9; /* Background color */
-            padding: 10px;   /* Some padding */
-            border: 1px solid #ddd; /* Border */
-            border-radius: 5px; /* Rounded corners */
-            z-index: 1000;   /* Ensure it appears above other elements */
-        }
+body {
+    font-family: 'Arial', sans-serif; 
+    background-color: #f5f5f5;
+    color: #333;
+    padding: 20px;
+}
+
+.floating-box {
+    background-color: #fff; 
+    padding: 15px 20px;
+    border-radius: 12px; 
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+/* Default to top-right for desktops */
+.floating-box.desktop {
+    position: fixed; 
+    top: 20px;      
+    right: 20px; 
+}
+
+/* Bottom position for mobile devices */
+.floating-box.mobile {
+    position: fixed; 
+    bottom: 20px;     
+    left: 50%;       
+    transform: translateX(-50%); 
+    width: 90%;
+}
+
+.hint {
+    margin-top: 10px;
+    color: #666;
+    font-style: italic;
+}
+
+canvas {
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    border: none;
+    background-color: #007BFF;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+
     </style>
 
     <meta charset="UTF-8">
@@ -32,7 +82,18 @@
     <button onclick="sendToServer()">Send</button>
 
     <script>
-        let canvas = document.getElementById('drawingCanvas');
+document.addEventListener("DOMContentLoaded", function() {
+    let floatingBox = document.querySelector(".floating-box");
+
+    if (window.innerWidth < 768) {
+        // Likely a mobile device
+        floatingBox.classList.add('mobile');
+    } else {
+        floatingBox.classList.add('desktop');
+    }
+});
+
+let canvas = document.getElementById('drawingCanvas');
 let ctx = canvas.getContext('2d');
 
 let drawing = false;
@@ -41,7 +102,14 @@ canvas.addEventListener('mousedown', startDrawing);
 canvas.addEventListener('mouseup', stopDrawing);
 canvas.addEventListener('mousemove', draw);
 
+// Add touch event listeners
+canvas.addEventListener('touchstart', startDrawing);
+canvas.addEventListener('touchend', stopDrawing);
+canvas.addEventListener('touchmove', draw);
+
 function startDrawing(e) {
+    // Prevent scrolling on touch devices
+    e.preventDefault();
     drawing = true;
     draw(e);
 }
@@ -53,23 +121,30 @@ function stopDrawing() {
 
 function draw(e) {
     if (!drawing) return;
+
     ctx.lineWidth = 5;
     ctx.lineCap = "round";
-
-    // Black color
     ctx.strokeStyle = "black";
 
-    // Get canvas bounding rectangle
-    let rect = canvas.getBoundingClientRect();
+    let x, y;
 
-    // Adjust the mouse position to be relative to the canvas
-    let x = e.clientX - rect.left;
-    let y = e.clientY - rect.top;
+    // Check if it's a touch event
+    if (e.touches) {
+        // Adjust for touch event
+        x = e.touches[0].clientX;
+        y = e.touches[0].clientY;
+    } else {
+        // Regular mouse event
+        x = e.clientX;
+        y = e.clientY;
+    }
+
+    let rect = canvas.getBoundingClientRect();
+    x -= rect.left;
+    y -= rect.top;
 
     ctx.lineTo(x, y);
     ctx.stroke();
-
-    // Begin a new path
     ctx.beginPath();
     ctx.moveTo(x, y);
 }
