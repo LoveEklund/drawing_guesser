@@ -103,79 +103,50 @@ document.addEventListener("DOMContentLoaded", function() {
 
 function attachEventListenersToCanvas(canvas) {
     // Mouse events
-    canvas.addEventListener('mousedown', startDrawingMouse);
-    canvas.addEventListener('mouseup', stopDrawingMouse);
-    canvas.addEventListener('mousemove', drawMouse);
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mousemove', draw);
 
     // Touch events
-    canvas.addEventListener('touchstart', startDrawingTouch, {passive: false});
-    canvas.addEventListener('touchend', stopDrawingTouch, {passive: false});
-    canvas.addEventListener('touchmove', drawTouch, {passive: false});
+    canvas.addEventListener('touchstart', startDrawing, {passive: false});
+    canvas.addEventListener('touchend', stopDrawing);
+    canvas.addEventListener('touchmove', draw, {passive: false});
 
 }
-
-
-function startDrawingMouse(e) {
-    if (touchMode) return;  // If in touch mode, ignore mouse events
-    drawing = true;
-    draw(e);
-}
-
-function stopDrawingMouse() {
-    if (touchMode) return;
-    drawing = false;
-    ctx.beginPath();
-}
-
-function startDrawingTouch(e) {
-    e.preventDefault();
-    touchMode = true;
-    drawing = true;
-}
-
-function stopDrawingTouch(e) {
-    e.preventDefault();
-    touchMode = false;
-    drawing = false;
-    ctx.beginPath();
-}
-
-function drawMouse(e) {
-    if (!touchMode && drawing) {
-        draw(e);
-    }
-}
-
-function drawTouch(e) {
-    e.preventDefault();
-    if (drawing) {
-        draw(e.touches[0]);  // Use the first touch point
-    }
-}
-
-// Rest of the code remains unchanged...
-
 let canvas = document.getElementById('drawingCanvas');
 let ctx = canvas.getContext('2d');
 attachEventListenersToCanvas(canvas);
 let drawing = false;
-let touchMode = false;
 let drawnCoordinates = []; // An array of arrays. Each inner array represents a stroke.
 let currentStroke = []; // Holds the current set of coordinates for an ongoing stroke.
+
+
+
+function startDrawing(e) {
+    // Prevent scrolling on touch devices
+    e.preventDefault();
+    drawing = true;
+    draw(e);
+}
+
+function stopDrawing() {
+    drawing = false;
+    if (currentStroke.length > 0) {
+            drawnCoordinates.push(currentStroke);
+            currentStroke = [];
+        }
+    ctx.beginPath();
+}
 
 
 
 function draw(e) {
     if (!drawing) {
         // If drawing just stopped, save the current stroke and reset
-        if (currentStroke.length > 0) {
-            drawnCoordinates.push(currentStroke);
-            currentStroke = [];
-        }
         return;
     }
 
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 5;
     ctx.lineCap = "round";
     ctx.strokeStyle = "black";
 
@@ -202,7 +173,7 @@ function draw(e) {
     ctx.moveTo(x, y);
 
     currentStroke.push({ x, y }); // Add to the current stroke array instead of drawnCoordinates
-}
+} 
 
 
 function sendToServer() {
