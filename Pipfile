@@ -8,6 +8,7 @@ tensorflow-cpu = "*"
 pillow = "*"
 gunicorn = "*"
 flask = "*"
+cairocffi = "*"
 
 [dev-packages]
 
