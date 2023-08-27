@@ -117,6 +117,7 @@ let canvas = document.getElementById('drawingCanvas');
 let ctx = canvas.getContext('2d');
 attachEventListenersToCanvas(canvas);
 let drawing = false;
+let drawnCoordinates = [];
 
 
 
@@ -160,28 +161,31 @@ function draw(e) {
     ctx.stroke();
     ctx.beginPath();
     ctx.moveTo(x, y);
+    drawnCoordinates.push({x, y});
 }
 
 function sendToServer() {
     let dataURL = canvas.toDataURL();
     let hintContent = document.querySelector('.hint').textContent.replace('Here is a hint : ', '');
 
-    fetch('/your-backend-endpoint', {
+    fetch('/rate_drawing', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ 
-            image: dataURL,
+            coordinates: drawnCoordinates,
             hint: hintContent  // Send the hint content
         })
     }).then(response => response.json())
       .then(data => {
         console.log(data);
+        
         displayResponseAboveCanvas(data.message); 
         if (data.newHint) { // Check if there's a newHint key in the response
             updateHint(data.newHint); // Update the hint div with the new hint
         }
+        drawnCoordinates = [];
         addNewCanvas();
       });
 }
