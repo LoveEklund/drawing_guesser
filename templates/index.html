@@ -10,6 +10,12 @@ body {
     padding: 20px;
 }
 
+@media (max-width: 767px) {
+    body {
+        padding-bottom: 120px;  /* Adjust this value based on the height of the floating box */
+    }
+}
+
 .floating-box {
     background-color: #fff; 
     padding: 15px 20px;
@@ -64,6 +70,7 @@ button:hover {
 }
 
 
+
     </style>
 
     <meta charset="UTF-8">
@@ -71,7 +78,7 @@ button:hover {
     <title>drwaing guesser</title>
 </head>
 <body>
-
+    
     <div class="floating-box">
         Here is the alternatives ant, apple, bat, bee, broccoli, broom, butterfly, cat, crocodile
 
@@ -93,19 +100,25 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
+
+function attachEventListenersToCanvas(canvas) {
+    // Mouse events
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mousemove', draw);
+
+    // Touch events
+    canvas.addEventListener('touchstart', startDrawing, {passive: false});
+    canvas.addEventListener('touchend', stopDrawing);
+    canvas.addEventListener('touchmove', draw, {passive: false});
+
+}
 let canvas = document.getElementById('drawingCanvas');
 let ctx = canvas.getContext('2d');
-
+attachEventListenersToCanvas(canvas);
 let drawing = false;
 
-canvas.addEventListener('mousedown', startDrawing);
-canvas.addEventListener('mouseup', stopDrawing);
-canvas.addEventListener('mousemove', draw);
 
-// Add touch event listeners
-canvas.addEventListener('touchstart', startDrawing);
-canvas.addEventListener('touchend', stopDrawing);
-canvas.addEventListener('touchmove', draw);
 
 function startDrawing(e) {
     // Prevent scrolling on touch devices
@@ -189,10 +202,7 @@ function addNewCanvas() {
     canvas = newCanvas;
     ctx = canvas.getContext('2d');
 
-    // Attach the event listeners to the new canvas
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mousemove', draw);
+    attachEventListenersToCanvas(canvas)
 }
 
 function displayResponseAboveCanvas(message) {
