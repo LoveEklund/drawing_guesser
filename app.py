@@ -20,8 +20,6 @@ app = Flask(__name__)
 BACKUP_LABEL_INDEX = 0 
 
 def string_overlap(target, strings):
-    print(target)
-    print(strings)
     result = ''
 
     for i in range(len(target)):
@@ -64,10 +62,9 @@ def save_image():
         label_index = BACKUP_LABEL_INDEX
     label = LABEL_MAPPING[label_index]
     predictions = score_image(image)
-    print(label)
-    print(label_index)
-    for label in LABEL_MAPPING:
-        print(f"p({LABEL_MAPPING[label]}) = {predictions[label]}")
+
+    for i_label in LABEL_MAPPING:
+        print(f"p({LABEL_MAPPING[i_label]}) = {predictions[i_label]}")
 
     top_guess = predictions.argmax()
     
