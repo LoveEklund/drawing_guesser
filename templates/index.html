@@ -117,7 +117,8 @@ let canvas = document.getElementById('drawingCanvas');
 let ctx = canvas.getContext('2d');
 attachEventListenersToCanvas(canvas);
 let drawing = false;
-let drawnCoordinates = [];
+let drawnCoordinates = []; // An array of arrays. Each inner array represents a stroke.
+let currentStroke = []; // Holds the current set of coordinates for an ongoing stroke.
 
 
 
@@ -133,8 +134,17 @@ function stopDrawing() {
     ctx.beginPath();
 }
 
+
+
 function draw(e) {
-    if (!drawing) return;
+    if (!drawing) {
+        // If drawing just stopped, save the current stroke and reset
+        if (currentStroke.length > 0) {
+            drawnCoordinates.push(currentStroke);
+            currentStroke = [];
+        }
+        return;
+    }
 
     ctx.lineWidth = 5;
     ctx.lineCap = "round";
@@ -161,8 +171,10 @@ function draw(e) {
     ctx.stroke();
     ctx.beginPath();
     ctx.moveTo(x, y);
-    drawnCoordinates.push({x, y});
+
+    currentStroke.push({ x, y }); // Add to the current stroke array instead of drawnCoordinates
 }
+
 
 function sendToServer() {
     let dataURL = canvas.toDataURL();

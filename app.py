@@ -96,8 +96,10 @@ def score_image(image):
 def save_image():
     data = request.json
     drawing_coords = data["coordinates"]
+    cord_vec = []
+    for stroke in drawing_coords:
+        cord_vec.append(np.array([np.array([cords["x"], cords["y"]]) for cords in stroke]).T)
 
-    cord_vec = np.array([np.array([np.array([cords["x"], cords["y"]]) for cords in drawing_coords]).T])
     image = vector_to_raster(cord_vec).reshape((28,28))
     in_hint = data["hint"].replace(" ","")
 
@@ -118,10 +120,10 @@ def save_image():
     
     if max(predictions) >= 0.5:
         if top_guess != label_index:
-            message = f"That's not it fam, looks like {LABEL_MAPPING[top_guess]} to me, I'll update the hint for you though"
+            message = f"Looks like {LABEL_MAPPING[top_guess]} to me, I'll update the hint for you though"
             out_hint = " ".join(string_overlap(label,[LABEL_MAPPING[top_guess],in_hint]))
         else:
-            message = f"yes you got it, congrats! \nit was {LABEL_MAPPING[label_index]} i wanted"
+            message = f"yes you got it, congrats! \nit was {LABEL_MAPPING[label_index]} I wanted"
             out_hint = " ".join(label)
     else:
         message = "what is that?"
