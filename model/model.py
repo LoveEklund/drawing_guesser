@@ -1,32 +1,37 @@
 import tensorflow as tf
 from tensorflow.keras import layers, models
 
-def get_model(n_classes):
+from keras import regularizers
+
+def get_model(n_classes, dropout_rate=0.1, l2_lambda=0.01):
     """
-    TODO: Maybe fix model to be something more advanced,
-      but this worksgreat for now 
+    Build an enhanced and regularized CNN model with dropout.
     """
-    # Create the model
     model = models.Sequential()
 
     # First convolutional layer
-    model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
+    model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1), kernel_regularizer=regularizers.l2(l2_lambda)))
     model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Dropout(dropout_rate))
 
     # Second convolutional layer
-    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu', kernel_regularizer=regularizers.l2(l2_lambda)))
     model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Dropout(dropout_rate))
 
-    # Third convolutional layer
-    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 
     # Flatten the tensor output for dense layers
     model.add(layers.Flatten())
 
     # Fully connected layer
-    model.add(layers.Dense(64, activation='relu'))
+    model.add(layers.Dense(128, activation='relu', kernel_regularizer=regularizers.l2(l2_lambda)))
+    model.add(layers.Dropout(dropout_rate))
 
-    # Output layer - Assume 10 classes for the sake of this example. Adjust this based on your specific dataset.
+    # Another fully connected layer
+    model.add(layers.Dense(64, activation='relu', kernel_regularizer=regularizers.l2(l2_lambda)))
+    model.add(layers.Dropout(dropout_rate))
+
+    # Output layer
     model.add(layers.Dense(n_classes, activation='softmax'))
 
     # Compile the model
