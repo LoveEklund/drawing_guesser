@@ -103,36 +103,47 @@ document.addEventListener("DOMContentLoaded", function() {
 
 function attachEventListenersToCanvas(canvas) {
     // Mouse events
-    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousedown', startDrawingMouse);
     canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mousemove', drawMouse);
 
     // Touch events
-    canvas.addEventListener('touchstart', startDrawing, {passive: false});
+    canvas.addEventListener('touchstart', startDrawingTouch, {passive: false});
     canvas.addEventListener('touchend', stopDrawing);
-    canvas.addEventListener('touchmove', draw, {passive: false});
-
+    canvas.addEventListener('touchmove', drawTouch, {passive: false});
 }
+
+function startDrawingMouse(e) {
+    drawing = true;
+    drawMouse(e);
+}
+
+function startDrawingTouch(e) {
+    e.preventDefault();  // Prevent scrolling on touch devices
+    drawing = true;
+    // Do not immediately call drawTouch here
+}
+
+function drawMouse(e) {
+    if (drawing) {
+        draw(e);
+    }
+}
+
+function drawTouch(e) {
+    if (drawing) {
+        draw(e.touches[0]); // Pass the first touch event
+    }
+}
+
+// Rest of the code remains unchanged...
+
 let canvas = document.getElementById('drawingCanvas');
 let ctx = canvas.getContext('2d');
 attachEventListenersToCanvas(canvas);
 let drawing = false;
 let drawnCoordinates = []; // An array of arrays. Each inner array represents a stroke.
 let currentStroke = []; // Holds the current set of coordinates for an ongoing stroke.
-
-
-
-function startDrawing(e) {
-    // Prevent scrolling on touch devices
-    e.preventDefault();
-    drawing = true;
-    draw(e);
-}
-
-function stopDrawing() {
-    drawing = false;
-    ctx.beginPath();
-}
 
 
 
@@ -146,7 +157,7 @@ function draw(e) {
         return;
     }
 
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 3;
     ctx.lineCap = "round";
     ctx.strokeStyle = "black";
 
