@@ -104,35 +104,52 @@ document.addEventListener("DOMContentLoaded", function() {
 function attachEventListenersToCanvas(canvas) {
     // Mouse events
     canvas.addEventListener('mousedown', startDrawingMouse);
-    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseup', stopDrawingMouse);
     canvas.addEventListener('mousemove', drawMouse);
 
     // Touch events
     canvas.addEventListener('touchstart', startDrawingTouch, {passive: false});
-    canvas.addEventListener('touchend', stopDrawing);
+    canvas.addEventListener('touchend', stopDrawingTouch, {passive: false});
     canvas.addEventListener('touchmove', drawTouch, {passive: false});
+
 }
 
+
 function startDrawingMouse(e) {
+    if (touchMode) return;  // If in touch mode, ignore mouse events
     drawing = true;
-    drawMouse(e);
+    draw(e);
+}
+
+function stopDrawingMouse() {
+    if (touchMode) return;
+    drawing = false;
+    ctx.beginPath();
 }
 
 function startDrawingTouch(e) {
-    e.preventDefault();  // Prevent scrolling on touch devices
+    e.preventDefault();
+    touchMode = true;
     drawing = true;
-    // Do not immediately call drawTouch here
+}
+
+function stopDrawingTouch(e) {
+    e.preventDefault();
+    touchMode = false;
+    drawing = false;
+    ctx.beginPath();
 }
 
 function drawMouse(e) {
-    if (drawing) {
+    if (!touchMode && drawing) {
         draw(e);
     }
 }
 
 function drawTouch(e) {
+    e.preventDefault();
     if (drawing) {
-        draw(e.touches[0]); // Pass the first touch event
+        draw(e.touches[0]);  // Use the first touch point
     }
 }
 
@@ -142,6 +159,7 @@ let canvas = document.getElementById('drawingCanvas');
 let ctx = canvas.getContext('2d');
 attachEventListenersToCanvas(canvas);
 let drawing = false;
+let touchMode = false;
 let drawnCoordinates = []; // An array of arrays. Each inner array represents a stroke.
 let currentStroke = []; // Holds the current set of coordinates for an ongoing stroke.
 
