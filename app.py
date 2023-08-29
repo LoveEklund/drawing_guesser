@@ -136,7 +136,8 @@ def serve_page():
     label_index = random.randint(0,len(LABEL_MAPPING) - 1)
     label = LABEL_MAPPING[label_index] 
     
-    rendered = render_template("index.html", hint = "_ " * len(label))
+    rendered = render_template("index.html", hint = "_ " * len(label), 
+                               labels =", ".join(LABEL_MAPPING.values()) )
 
     # Create a response object from the rendered string
     resp = make_response(rendered)
