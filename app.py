@@ -118,7 +118,7 @@ def save_image():
 
     top_guess = predictions.argmax()
     
-    if max(predictions) >= 0.5:
+    if max(predictions) >= 0.2:
         if top_guess != label_index:
             message = f"Looks like {LABEL_MAPPING[top_guess]} to me, I'll update the hint for you though"
             out_hint = " ".join(string_overlap(label,[LABEL_MAPPING[top_guess],in_hint]))
