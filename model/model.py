@@ -3,7 +3,7 @@ from tensorflow.keras import layers, models
 
 from keras import regularizers
 
-def get_model(n_classes, dropout_rate=0.1, l2_lambda=0.01):
+def get_model(n_classes, dropout_rate=0, l2_lambda=0):
     """
     Build an enhanced and regularized CNN model with dropout.
     """
